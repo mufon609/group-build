@@ -6,6 +6,7 @@ Run the phishing investigator against the demo inbox (or a single message).
   python src/scam/run_demo.py --no-claude          # offline heuristics only
   python src/scam/run_demo.py --sender 24273 --text "Chase: ..."
   python src/scam/run_demo.py --file path/to/inbox.json
+  python src/scam/run_demo.py --md reports/investigation_report.md   # write Markdown summary
 """
 
 from __future__ import annotations
@@ -17,8 +18,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from investigate import investigate, normalize_incoming  # noqa: E402
+from report_md import render  # noqa: E402
 
 DEMO_FILE = Path(__file__).resolve().parents[2] / "demo-data" / "sample_texts.json"
+DEFAULT_MD = Path(__file__).resolve().parents[2] / "reports" / "investigation_report.md"
 
 COLORS = {"Safe": "\033[92m", "Suspicious": "\033[93m", "Likely Scam": "\033[91m"}
 RESET = "\033[0m"
@@ -63,6 +66,8 @@ def main() -> None:
     ap.add_argument("--text")
     ap.add_argument("--json", action="store_true")
     ap.add_argument("--no-claude", action="store_true")
+    ap.add_argument("--md", type=Path, nargs="?", const=DEFAULT_MD, help="write a Markdown summary report (default: reports/investigation_report.md)")
+    ap.add_argument("--quiet", action="store_true", help="do not print per-message output to the terminal")
     args = ap.parse_args()
 
     if args.sender and args.text:
@@ -77,11 +82,15 @@ def main() -> None:
         report = investigate(msg["sender"], msg["text"], use_claude=not args.no_claude)
         report["id"] = msg["id"]
         reports.append(report)
-        if not args.json:
+        if not args.json and not args.quiet:
             print(pretty(report))
             print()
     if args.json:
         print(json.dumps(reports, indent=2))
+    if args.md:
+        args.md.parent.mkdir(parents=True, exist_ok=True)
+        args.md.write_text(render(reports))
+        print(f"Markdown report written to {args.md}")
 
 
 if __name__ == "__main__":

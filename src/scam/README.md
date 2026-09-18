@@ -11,6 +11,7 @@ pip install -r requirements.txt
 python src/scam/run_demo.py                 # demo inbox, Claude verdict if key present
 python src/scam/run_demo.py --no-claude     # offline heuristics only
 python src/scam/run_demo.py --json          # machine-readable reports
+python src/scam/run_demo.py --md --quiet    # write reports/investigation_report.md
 python src/scam/run_demo.py --sender 24273 --text "Chase: Did you attempt..."
 export ANTHROPIC_API_KEY=sk-ant-...         # enables the Claude verdict step
 ```
