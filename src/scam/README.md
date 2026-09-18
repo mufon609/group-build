@@ -9,6 +9,7 @@ Two builds of the same engine, same rules, same output shape:
 ## Try the browser demo
 
 Open `src/scam/index.html` in a browser. Nothing to install.
+Pitch deck: open `src/scam/slides.html` (arrow keys or click to advance).
 
 ## Plug into the app page (for the frontend owner)
 

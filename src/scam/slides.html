@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Scam Check — how it works</title>
+<style>
+  :root { --bg:#faf9f5; --surface:#fff; --text:#1f1e1d; --muted:#6b6a66; --line:#e6e3da; --accent:#c96442;
+          --safe:#2f8f5b; --sus:#b7791f; --scam:#c0392b; }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg:#1f1e1d; --surface:#2a2927; --text:#f0eee6; --muted:#a3a09a; --line:#3a3936; --accent:#d97757;
+            --safe:#6fcf97; --sus:#f2c26b; --scam:#f28b82; } }
+  * { box-sizing:border-box; }
+  html, body { height:100%; margin:0; }
+  body { background:var(--bg); color:var(--text); font:20px/1.45 system-ui,-apple-system,sans-serif; overflow:hidden; }
+  .slide { position:absolute; inset:0; display:none; padding:8vh 10vw; flex-direction:column; justify-content:center; }
+  .slide.active { display:flex; animation: fade .25s ease-out; }
+  @keyframes fade { from { opacity:0; transform:translateY(8px);} }
+  .eyebrow { color:var(--accent); font-weight:700; font-size:16px; letter-spacing:.08em; text-transform:uppercase; margin:0 0 10px; }
+  h1 { font-size:clamp(36px,6vw,72px); line-height:1.05; letter-spacing:-.02em; margin:0 0 18px; }
+  h2 { font-size:clamp(28px,4.2vw,48px); line-height:1.1; letter-spacing:-.02em; margin:0 0 22px; }
+  p, li { color:var(--text); font-size:clamp(18px,2vw,26px); margin:0 0 10px; }
+  .muted { color:var(--muted); }
+  ul { padding-left:1.1em; margin:0; }
+  li { margin-bottom:10px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:18px; margin-top:8px; }
+  .card { background:var(--surface); border:1px solid var(--line); border-radius:16px; padding:20px 22px; }
+  .card h3 { margin:0 0 8px; font-size:16px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); }
+  .card p { font-size:clamp(16px,1.7vw,21px); margin:0; }
+  .num { display:inline-grid; place-items:center; width:38px; height:38px; border-radius:50%; background:var(--accent); color:#fff; font-weight:700; margin-right:12px; font-size:18px; }
+  .flow li { list-style:none; display:flex; align-items:baseline; }
+  .bubble { max-width:720px; background:var(--surface); border:1px solid var(--line); border-radius:18px; padding:14px 18px; font-size:clamp(16px,1.8vw,22px); margin-bottom:14px; }
+  .bubble small { display:block; color:var(--muted); font-size:14px; }
+  .tag { display:inline-block; font-size:14px; font-weight:700; padding:2px 10px; border-radius:999px; color:#fff; margin-top:6px; }
+  .tag.scam { background:var(--scam);} .tag.safe { background:var(--safe);} .tag.sus { background:var(--sus);}
+  .c-scam { color:var(--scam); font-weight:700;} .c-safe { color:var(--safe); font-weight:700;} .c-sus { color:var(--sus); font-weight:700;}
+  code { background:var(--surface); border:1px solid var(--line); border-radius:6px; padding:1px 6px; font-size:.9em; }
+  pre { background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:14px 18px; font-size:clamp(14px,1.5vw,18px); overflow:auto; margin:0; }
+  .foot { position:fixed; bottom:18px; left:0; right:0; display:flex; justify-content:space-between; padding:0 10vw; color:var(--muted); font-size:14px; }
+  .foot a { color:var(--accent); text-decoration:none; }
+  .bar { position:fixed; top:0; left:0; height:4px; background:var(--accent); transition:width .25s; }
+</style>
+</head>
+<body>
+<div class="bar" id="bar"></div>
+
+<section class="slide active">
+  <p class="eyebrow">Scam Detection</p>
+  <h1>Is that text a scam?</h1>
+  <p class="muted">A message arrives. Before you tap, we investigate who really sent it.</p>
+  <p class="muted" style="margin-top:28px;font-size:16px">→ arrow keys or space to advance</p>
+</section>
+
+<section class="slide">
+  <p class="eyebrow">The problem</p>
+  <h2>Smishing works because the text <em>looks</em> like it's from someone you trust.</h2>
+  <div class="grid">
+    <div class="card"><h3>Package held</h3><p>"USPS: confirm your address within 12 hours"</p></div>
+    <div class="card"><h3>Unpaid toll</h3><p>"E-ZPass Final Notice: pay $6.99 to avoid a $50 fee"</p></div>
+    <div class="card"><h3>Bank locked</h3><p>"Chase Alert: verify your identity immediately"</p></div>
+    <div class="card"><h3>Refund bait</h3><p>"IRS: you are eligible for a $1,400 refund"</p></div>
+  </div>
+</section>
+
+<section class="slide">
+  <p class="eyebrow">Our idea</p>
+  <h2>Don't just read the words. Check the claim.</h2>
+  <ul>
+    <li>Every scam text <strong>names a company</strong> to borrow its trust.</li>
+    <li>So we ask one sharp question: <strong>does that company actually own this sender?</strong></li>
+    <li>Real brands text from <strong>published short codes</strong>. Scammers use random 10-digit lines, foreign numbers, or email addresses.</li>
+    <li>Some brands, like USPS, the IRS, and E-ZPass, <strong>never initiate texts like this</strong> at all.</li>
+  </ul>
+</section>
+
+<section class="slide">
+  <p class="eyebrow">How it works</p>
+  <h2>Five checks, all offline, in under a millisecond.</h2>
+  <ul class="flow">
+    <li><span class="num">1</span><span><strong>Classify the sender.</strong> Short code, 10-digit number, email, or contact name.</span></li>
+    <li><span class="num">2</span><span><strong>Find the claimed company.</strong> 20 most-impersonated brands in a local knowledge base.</span></li>
+    <li><span class="num">3</span><span><strong>Ownership check.</strong> <span class="c-safe">Confirmed</span> · Unverified · <span class="c-sus">Suspicious</span> · <span class="c-scam">Contradicted</span></span></li>
+    <li><span class="num">4</span><span><strong>Inspect links.</strong> Lookalike domains, shorteners, risky TLDs, bare IPs.</span></li>
+    <li><span class="num">5</span><span><strong>Read the wording.</strong> Urgency, suspension threats, "Reply Y then reopen the link".</span></li>
+  </ul>
+  <p class="muted" style="margin-top:14px">Score → <span class="c-safe">Safe</span> · <span class="c-sus">Suspicious</span> · <span class="c-scam">Likely Scam</span>, with plain-language reasons and what to do next.</p>
+</section>
+
+<section class="slide">
+  <p class="eyebrow">Same brand, two senders</p>
+  <h2>The ownership check is what separates them.</h2>
+  <div class="bubble"><small>From 24273</small>Chase: Did you attempt a $412.88 purchase at BEST BUY? Reply YES or NO.<br><span class="tag safe">Safe</span> <span class="muted" style="font-size:15px">· 24273 is a published Chase short code</span></div>
+  <div class="bubble"><small>From +1 (310) 555-0133</small>Chase Bank Alert: Your account has been locked. Verify your identity immediately at chase-secure-verify.com<br><span class="tag scam">Likely Scam</span> <span class="muted" style="font-size:15px">· Chase doesn't text from 10-digit lines · lookalike domain · urgency + lockout threat</span></div>
+</section>
+
+<section class="slide">
+  <p class="eyebrow">Built to plug in</p>
+  <h2>Two script tags. One function.</h2>
+  <pre>&lt;script src="scam/brands.js"&gt;&lt;/script&gt;
+&lt;script src="scam/scam.js"&gt;&lt;/script&gt;
+
+const r = investigate(sender, text);
+r.risk_level          // "Safe" | "Suspicious" | "Likely Scam"
+r.company_ownership   // [{ brand, status, reason }]
+r.urls                // [{ host, flags }]
+r.recommended_action  // "Don't tap. Forward to 7726..."</pre>
+  <p class="muted" style="margin-top:16px">Reads the team's text-log format directly. No server, no API key, works offline. Python twin produces a Markdown report; Claude adds an analyst write-up when a key is present.</p>
+</section>
+
+<section class="slide">
+  <p class="eyebrow">Demo results</p>
+  <h2>13 messages in the demo inbox.</h2>
+  <div class="grid">
+    <div class="card"><h3>Likely Scam</h3><p class="c-scam" style="font-size:44px">6</p><p class="muted">USPS, E-ZPass, Chase, Netflix, IRS, DMV</p></div>
+    <div class="card"><h3>Suspicious</h3><p class="c-sus" style="font-size:44px">1</p><p class="muted">"Hey is this Sarah?" wrong-number opener</p></div>
+    <div class="card"><h3>Safe</h3><p class="c-safe" style="font-size:44px">6</p><p class="muted">Real Chase, Amazon, FedEx short codes, Mom, dentist, Sam</p></div>
+  </div>
+  <p class="muted" style="margin-top:18px">Zero false positives on the legitimate texts. Every verdict comes with the evidence.</p>
+</section>
+
+<section class="slide">
+  <p class="eyebrow">Next</p>
+  <h2>What we'd add with more time</h2>
+  <ul>
+    <li><strong>Live number intel:</strong> VoIP and fraud-score lookups (free tiers exist, need an account).</li>
+    <li><strong>Domain age:</strong> RDAP lookup, a domain registered last week is nearly conclusive.</li>
+    <li><strong>Claude as analyst:</strong> already wired in Python, turn it on with a key for a human-readable write-up and web check of the brand's official contact page.</li>
+    <li><strong>Route real texts in:</strong> the input adapter is one function; swap it when the log format lands.</li>
+  </ul>
+  <p style="margin-top:28px"><strong>Try it:</strong> open <code>src/scam/index.html</code></p>
+</section>
+
+<div class="foot"><span id="count"></span><a href="index.html">Open the demo →</a></div>
+
+<script>
+const slides = [...document.querySelectorAll('.slide')];
+let i = Math.max(0, Math.min(slides.length - 1, Number(location.hash.slice(1)) || 0));
+function go(n) {
+  i = Math.max(0, Math.min(slides.length - 1, n));
+  slides.forEach((s, k) => s.classList.toggle('active', k === i));
+  document.getElementById('count').textContent = `${i + 1} / ${slides.length}`;
+  document.getElementById('bar').style.width = `${((i + 1) / slides.length) * 100}%`;
+  history.replaceState(null, '', `#${i}`);
+}
+addEventListener('keydown', e => {
+  if (['ArrowRight', ' ', 'PageDown', 'Enter'].includes(e.key)) { e.preventDefault(); go(i + 1); }
+  if (['ArrowLeft', 'PageUp', 'Backspace'].includes(e.key)) { e.preventDefault(); go(i - 1); }
+  if (e.key === 'Home') go(0); if (e.key === 'End') go(slides.length - 1);
+});
+addEventListener('click', e => { if (!e.target.closest('a')) go(i + 1); });
+let tx = null;
+addEventListener('touchstart', e => tx = e.touches[0].clientX);
+addEventListener('touchend', e => { if (tx === null) return; const dx = e.changedTouches[0].clientX - tx; if (Math.abs(dx) > 40) go(i + (dx < 0 ? 1 : -1)); tx = null; });
+go(i);
+</script>
+</body>
+</html>
