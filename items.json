@@ -1,0 +1,37 @@
+[
+  {
+    "id": "1",
+    "name": "AirPods Pro (2nd Gen)",
+    "price": 249,
+    "image": "img/airpods.jpg",
+    "fact": "Apple's active noise cancellation adapts to your ear shape in real time."
+  },
+  {
+    "id": "2",
+    "name": "Le Creuset Dutch Oven",
+    "price": 380,
+    "image": "img/dutchoven.jpg",
+    "fact": "These are cast in a single foundry in Fresnoy-le-Grand, France, and can last generations."
+  },
+  {
+    "id": "3",
+    "name": "PlayStation 5",
+    "price": 499,
+    "image": "img/ps5.jpg",
+    "fact": "The PS5's SSD is fast enough to load Spider-Man's entire map in about a second."
+  },
+  {
+    "id": "4",
+    "name": "Stanley Quencher Tumbler",
+    "price": 45,
+    "image": "img/stanley.jpg",
+    "fact": "This tumbler went so viral in 2023 that people camped outside Target for restocks."
+  },
+  {
+    "id": "5",
+    "name": "Peloton Bike",
+    "price": 1445,
+    "image": "img/peloton.jpg",
+    "fact": "Peloton bikes stream live classes from a studio that has hosted over 10,000 rides."
+  }
+]
