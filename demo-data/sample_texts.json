@@ -1,0 +1,62 @@
+[
+  {
+    "id": "msg-001",
+    "sender": "+12025550147",
+    "received_at": "2026-09-17T09:12:00Z",
+    "text": "USPS: Your package is on hold due to an incomplete address. Confirm your details within 12 hours or it will be returned: usps-redelivery-help.top/track. Reply Y then reopen the link in Safari."
+  },
+  {
+    "id": "msg-002",
+    "sender": "+447400123456",
+    "received_at": "2026-09-17T09:40:00Z",
+    "text": "E-ZPass Final Notice: You have an unpaid toll of $6.99. To avoid a $50 late fee pay now at ezpass-tollservices.com/pay"
+  },
+  {
+    "id": "msg-003",
+    "sender": "24273",
+    "received_at": "2026-09-17T10:05:00Z",
+    "text": "Chase: Did you attempt a $412.88 purchase at BEST BUY on 09/17? Reply YES or NO. Msg & data rates may apply."
+  },
+  {
+    "id": "msg-004",
+    "sender": "+13105550133",
+    "received_at": "2026-09-17T10:31:00Z",
+    "text": "Chase Bank Alert: Your account has been locked due to suspicious activity. Verify your identity immediately at chase-secure-verify.com or call 310-555-0199."
+  },
+  {
+    "id": "msg-005",
+    "sender": "262966",
+    "received_at": "2026-09-17T11:02:00Z",
+    "text": "Amazon: Your one-time passcode is 482913. Don't share it with anyone."
+  },
+  {
+    "id": "msg-006",
+    "sender": "hr.notice.8823@gmail.com",
+    "received_at": "2026-09-17T11:44:00Z",
+    "text": "Dear Customer, your Netflix payment failed. Update your billing info to keep your account: bit.ly/3nEtFlx"
+  },
+  {
+    "id": "msg-007",
+    "sender": "+16465550188",
+    "received_at": "2026-09-17T12:15:00Z",
+    "text": "IRS Notice: You are eligible for a $1,400 tax refund. Claim it by 09/19 at irs-refund-portal.us/claim"
+  },
+  {
+    "id": "msg-008",
+    "sender": "+18477550122",
+    "received_at": "2026-09-17T13:20:00Z",
+    "text": "Hey is this Sarah? It's Mike from the conference. Long time!"
+  },
+  {
+    "id": "msg-009",
+    "sender": "46339",
+    "received_at": "2026-09-17T14:01:00Z",
+    "text": "FedEx: Your package 7489 3312 0092 is out for delivery today. Track at fedex.com/track"
+  },
+  {
+    "id": "msg-010",
+    "sender": "+12125550166",
+    "received_at": "2026-09-17T15:12:00Z",
+    "text": "Hi, it's Dana from the dentist office. Just confirming your cleaning Thursday at 2pm. Reply C to confirm."
+  }
+]
