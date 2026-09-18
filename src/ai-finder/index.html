@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Opportunity Finder</title>
+<style>
+  :root {
+    --bg: #faf9f5; --surface: #ffffff; --text: #1f1e1d; --muted: #6b6a66; --line: #e6e3da;
+    --accent: #c96442; --accent-text: #ffffff; --mark: #f6dccf; --me: #c96442; --me-text: #ffffff;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #1f1e1d; --surface: #2a2927; --text: #f0eee6; --muted: #a3a09a; --line: #3a3936;
+      --accent: #d97757; --accent-text: #1f1e1d; --mark: #5a3526; --me: #d97757; --me-text: #1f1e1d; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.5 system-ui, -apple-system, sans-serif; }
+  main { max-width: 480px; margin: 0 auto; padding: 48px 16px; min-height: 100vh; }
+  section[hidden] { display: none; }
+  h1 { font-size: 32px; line-height: 1.15; margin: 0 0 12px; letter-spacing: -0.02em; }
+  h2 { font-size: 24px; margin: 0 0 4px; }
+  p { margin: 0 0 24px; color: var(--muted); }
+  button { font: inherit; cursor: pointer; }
+  .primary { width: 100%; padding: 14px; border: 0; border-radius: 12px; background: var(--accent); color: var(--accent-text); font-weight: 600; }
+  .primary:focus-visible, .job:focus-visible, a:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+  .jobs { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .job { padding: 20px 12px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface); color: var(--text); text-align: center; }
+  .job:hover { border-color: var(--accent); }
+  .job span { display: block; font-size: 32px; margin-bottom: 4px; }
+
+  .status { font-size: 14px; color: var(--muted); margin-bottom: 16px; font-variant-numeric: tabular-nums; }
+  .chat { display: flex; flex-direction: column; gap: 8px; }
+  .msg { max-width: 80%; padding: 8px 12px; border-radius: 16px; background: var(--surface); border: 1px solid var(--line); animation: pop .2s ease-out; }
+  .msg small { display: block; font-size: 12px; color: var(--muted); }
+  .msg.me { align-self: flex-end; background: var(--me); color: var(--me-text); border-color: transparent; }
+  .msg.me small { display: none; }
+  mark { background: var(--mark); color: inherit; border-radius: 4px; padding: 0 2px; }
+  .msg.me mark { background: rgba(255,255,255,.3); }
+  @keyframes pop { from { opacity: 0; transform: translateY(6px); } }
+
+  .eyebrow { font-size: 14px; color: var(--muted); margin: 0; }
+  .archetype { font-size: 36px; margin: 0 0 8px; color: var(--accent); }
+  .cards { list-style: none; padding: 0; margin: 0 0 24px; display: flex; flex-direction: column; gap: 12px; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; }
+  .card h3 { margin: 0 0 4px; font-size: 17px; }
+  .card p { margin: 0 0 8px; color: var(--text); }
+  .card blockquote { margin: 0 0 8px; padding-left: 10px; border-left: 3px solid var(--mark); color: var(--muted); font-size: 14px; }
+  .card a { font-size: 14px; color: var(--muted); }
+
+  @media (prefers-reduced-motion: reduce) { .msg { animation: none; } }
+</style>
+</head>
+<body>
+<main>
+  <section id="start">
+    <h1>What could Claude do with your texts?</h1>
+    <p>We scan your messages for the stuff you repeat every week, then show which Claude features take it off your plate.</p>
+    <button class="primary" onclick="show('pick')">Start</button>
+  </section>
+
+  <section id="pick" hidden>
+    <h2>What do you do?</h2>
+    <p>We'll scan a week of texts for that job.</p>
+    <div class="jobs" id="jobs"></div>
+  </section>
+
+  <section id="scan" hidden>
+    <h2 id="scan-title"></h2>
+    <div class="status" id="scan-status" aria-live="polite"></div>
+    <div class="chat" id="chat"></div>
+  </section>
+
+  <section id="result" hidden>
+    <p class="eyebrow">You're</p>
+    <h1 class="archetype" id="archetype"></h1>
+    <p id="blurb"></p>
+    <h2>Where Claude can help</h2>
+    <p id="meta"></p>
+    <ol class="cards" id="cards"></ol>
+    <button class="primary" onclick="show('pick')">Try another job</button>
+  </section>
+</main>
+
+<script src="claude-features.js"></script>
+<script src="sample-chats.js"></script>
+<script src="finder.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => s.replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const show = id => document.querySelectorAll('section').forEach(s => s.hidden = s.id !== id);
+const wait = ms => new Promise(r => setTimeout(r, matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : ms));
+
+// Wrap matched signals in <mark>, merging overlapping/adjacent matches into one highlight.
+function highlight(text) {
+  const lower = text.toLowerCase();
+  const ranges = signalsIn(text, CATALOG)
+    .map(s => [lower.indexOf(s), lower.indexOf(s) + s.length])
+    .sort((a, b) => a[0] - b[0])
+    .reduce((acc, r) => {
+      const last = acc[acc.length - 1];
+      if (last && r[0] <= last[1] + 1) last[1] = Math.max(last[1], r[1]); else acc.push(r);
+      return acc;
+    }, []);
+  let html = '', pos = 0;
+  for (const [a, b] of ranges) { html += esc(text.slice(pos, a)) + `<mark>${esc(text.slice(a, b))}</mark>`; pos = b; }
+  return html + esc(text.slice(pos));
+}
+
+$('jobs').innerHTML = Object.entries(SAMPLE_CHATS)
+  .map(([job, { emoji }]) => `<button class="job" data-job="${job}"><span aria-hidden="true">${emoji}</span>${job}</button>`).join('');
+$('jobs').onclick = e => { const b = e.target.closest('.job'); if (b) run(b.dataset.job); };
+
+async function run(job) {
+  const messages = SAMPLE_CHATS[job].messages.map(([from, text]) => ({ from, text }));
+  show('scan');
+  $('scan-title').textContent = `Scanning ${job.toLowerCase()} texts…`;
+  $('chat').innerHTML = '';
+  const found = new Set();
+  for (const [i, m] of messages.entries()) {
+    signalsIn(m.text, CATALOG).forEach(s => found.add(s));
+    $('chat').insertAdjacentHTML('beforeend',
+      `<div class="msg ${m.from === 'Me' ? 'me' : ''}"><small>${esc(m.from)}</small>${highlight(m.text)}</div>`);
+    $('scan-status').textContent = `${i + 1} of ${messages.length} messages · ${found.size} patterns found`;
+    window.scrollTo(0, document.body.scrollHeight);
+    await wait(220);
+  }
+  await wait(700);
+
+  const r = analyze(messages, CATALOG);
+  $('archetype').textContent = r.archetype.name;
+  $('blurb').textContent = r.archetype.blurb;
+  $('meta').textContent = `Based on ${r.signalCount} patterns in ${messages.length} messages.`;
+  $('cards').innerHTML = r.top.map(t => `
+    <li class="card">
+      <h3>${esc(t.feature)}</h3>
+      <p>${esc(t.suggestion)}</p>
+      <blockquote>“${esc(t.evidence[0])}”${t.hits > 1 ? ` <br>+${t.hits - 1} more like this` : ''}</blockquote>
+      <a href="${esc(t.source_url)}" target="_blank" rel="noopener">How it works ↗</a>
+    </li>`).join('');
+  show('result');
+  requestAnimationFrame(() => window.scrollTo(0, 0));
+}
+</script>
+</body>
+</html>

@@ -1,4 +1,5 @@
-[
+// Claude feature catalog, 68 entries from official Claude docs. Each has text-message signals + source_url.
+const CATALOG = [
   {
     "id": "projects",
     "feature": "Projects",
@@ -1269,4 +1270,6 @@
     "source_url": "https://support.claude.com/en/articles/10166901-use-google-workspace-connectors",
     "technical": false
   }
-]
+];
+
+if (typeof module !== 'undefined') module.exports = CATALOG;
