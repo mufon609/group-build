@@ -1,0 +1,20 @@
+# Demo inbox in the team text-log format. Mix of legit texts and smishing.
+# "Me" is the phone owner. All numbers are 555 fakes, all domains are fake.
+
+[2026-09-17 8:02 AM] Mom: call me when you're up, nothing urgent
+[2026-09-17 8:05 AM] Me: will do
+[2026-09-17 9:12 AM] +1 (202) 555-0147: USPS: Your package is on hold due to an incomplete address. Confirm your details within 12 hours or it will be returned: usps-redelivery-help.top/track. Reply Y then reopen the link in Safari.
+[2026-09-17 9:40 AM] +44 7400 123456: E-ZPass Final Notice: You have an unpaid toll of $6.99. To avoid a $50 late fee pay now at ezpass-tollservices.com/pay
+[2026-09-17 10:05 AM] 24273: Chase: Did you attempt a $412.88 purchase at BEST BUY on 09/17? Reply YES or NO. Msg & data rates may apply.
+[2026-09-17 10:06 AM] Me: YES
+[2026-09-17 10:31 AM] +1 (310) 555-0133: Chase Bank Alert: Your account has been locked due to suspicious activity. Verify your identity immediately at chase-secure-verify.com or call 310-555-0199.
+[2026-09-17 11:02 AM] 262966: Amazon: Your one-time passcode is 482913. Don't share it with anyone.
+[2026-09-17 11:44 AM] hr.notice.8823@gmail.com: Dear Customer, your Netflix payment failed. Update your billing info to keep your account: bit.ly/3nEtFlx
+[2026-09-17 12:15 PM] +1 (646) 555-0188: IRS Notice: You are eligible for a $1,400 tax refund. Claim it by 09/19 at irs-refund-portal.us/claim
+[2026-09-17 1:20 PM] +1 (847) 555-0122: Hey is this Sarah? It's Mike from the conference. Long time!
+[2026-09-17 2:01 PM] 46339: FedEx: Your package 7489 3312 0092 is out for delivery today. Track at fedex.com/track
+[2026-09-17 3:12 PM] Dr. Patel's Office: Hi, it's Dana from the dentist office. Just confirming your cleaning Thursday at 2pm. Reply C to confirm.
+[2026-09-17 3:13 PM] Me: C
+[2026-09-17 4:40 PM] +1 (917) 555-0170: DMV: Your driver's license will be suspended for an unpaid traffic ticket. Pay today to avoid penalties: dmv-ticketpay.com
+[2026-09-17 6:05 PM] Sam: wanna get dinner? thinking that noodle place
+[2026-09-17 6:07 PM] Me: yes 7pm

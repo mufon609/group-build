@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Scam Check</title>
+<style>
+  :root {
+    --bg: #faf9f5; --surface: #ffffff; --text: #1f1e1d; --muted: #6b6a66; --line: #e6e3da;
+    --accent: #c96442; --accent-text: #ffffff; --me: #c96442; --me-text: #ffffff;
+    --safe: #2f8f5b; --safe-bg: #e4f4ea; --sus: #b7791f; --sus-bg: #fbf0d9; --scam: #c0392b; --scam-bg: #fbe3e0;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #1f1e1d; --surface: #2a2927; --text: #f0eee6; --muted: #a3a09a; --line: #3a3936;
+      --accent: #d97757; --accent-text: #1f1e1d; --me: #d97757; --me-text: #1f1e1d;
+      --safe: #6fcf97; --safe-bg: #1f3a2c; --sus: #f2c26b; --sus-bg: #3f3419; --scam: #f28b82; --scam-bg: #4a2320; }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.5 system-ui, -apple-system, sans-serif; }
+  main { max-width: 520px; margin: 0 auto; padding: 48px 16px; min-height: 100vh; }
+  section[hidden] { display: none; }
+  h1 { font-size: 32px; line-height: 1.15; margin: 0 0 12px; letter-spacing: -0.02em; }
+  h2 { font-size: 24px; margin: 0 0 4px; }
+  p { margin: 0 0 24px; color: var(--muted); }
+  button { font: inherit; cursor: pointer; }
+  .primary { width: 100%; padding: 14px; border: 0; border-radius: 12px; background: var(--accent); color: var(--accent-text); font-weight: 600; }
+  .secondary { width: 100%; padding: 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); color: var(--text); font-weight: 600; margin-top: 8px; }
+  textarea, input { width: 100%; font: inherit; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); color: var(--text); margin-bottom: 10px; }
+  textarea { min-height: 96px; resize: vertical; }
+  .status { font-size: 14px; color: var(--muted); margin-bottom: 16px; font-variant-numeric: tabular-nums; }
+  .chat { display: flex; flex-direction: column; gap: 8px; }
+  .msg { max-width: 85%; padding: 8px 12px; border-radius: 16px; background: var(--surface); border: 1px solid var(--line); animation: pop .2s ease-out; cursor: pointer; }
+  .msg small { display: block; font-size: 12px; color: var(--muted); }
+  .msg.me { align-self: flex-end; background: var(--me); color: var(--me-text); border-color: transparent; cursor: default; }
+  .msg.me small { display: none; }
+  .msg .tag { display: inline-block; font-size: 11px; font-weight: 700; padding: 1px 8px; border-radius: 999px; margin-top: 4px; }
+  .msg.scam { border-color: var(--scam); background: var(--scam-bg); }
+  .msg.sus { border-color: var(--sus); background: var(--sus-bg); }
+  .tag.scam { background: var(--scam); color: #fff; } .tag.sus { background: var(--sus); color: #fff; } .tag.safe { background: var(--safe); color: #fff; }
+  @keyframes pop { from { opacity: 0; transform: translateY(6px); } }
+  .verdict { font-size: 36px; margin: 0 0 8px; }
+  .verdict.scam { color: var(--scam); } .verdict.sus { color: var(--sus); } .verdict.safe { color: var(--safe); }
+  .eyebrow { font-size: 14px; color: var(--muted); margin: 0; }
+  .card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; margin-bottom: 12px; }
+  .card h3 { margin: 0 0 6px; font-size: 15px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); }
+  .card p, .card li { margin: 0 0 6px; color: var(--text); }
+  .card ul { margin: 0; padding-left: 18px; }
+  .card blockquote { margin: 0 0 8px; padding-left: 10px; border-left: 3px solid var(--line); color: var(--muted); font-size: 14px; }
+  .own { font-weight: 700; }
+  .own.CONFIRMED { color: var(--safe); } .own.UNVERIFIED { color: var(--muted); } .own.SUSPICIOUS { color: var(--sus); } .own.CONTRADICTED { color: var(--scam); }
+  code { font-size: 14px; }
+  @media (prefers-reduced-motion: reduce) { .msg { animation: none; } }
+</style>
+</head>
+<body>
+<main>
+  <section id="start">
+    <h1>Is that text a scam?</h1>
+    <p>We check who the message says it's from, whether that company really owns the number, and what the link is hiding.</p>
+    <button class="primary" onclick="runInbox()">Scan the demo inbox</button>
+    <button class="secondary" onclick="show('paste')">Check one message</button>
+  </section>
+
+  <section id="paste" hidden>
+    <h2>Paste a text</h2>
+    <p>Sender can be a phone number, short code, or email.</p>
+    <input id="in-sender" placeholder="From, e.g. +1 (202) 555-0147 or 24273">
+    <textarea id="in-text" placeholder="Message text"></textarea>
+    <button class="primary" onclick="runOne()">Check it</button>
+    <button class="secondary" onclick="show('start')">Back</button>
+  </section>
+
+  <section id="scan" hidden>
+    <h2>Scanning your texts…</h2>
+    <div class="status" id="scan-status" aria-live="polite"></div>
+    <div class="chat" id="chat"></div>
+    <p style="margin-top:16px;font-size:14px">Tap any flagged message for the full investigation.</p>
+    <button class="secondary" onclick="show('start')">Back</button>
+  </section>
+
+  <section id="result" hidden>
+    <p class="eyebrow">Verdict</p>
+    <h1 class="verdict" id="verdict"></h1>
+    <blockquote class="card" id="orig"></blockquote>
+    <div id="cards"></div>
+    <button class="primary" onclick="show('scan')" id="back-scan">Back to inbox</button>
+    <button class="secondary" onclick="show('start')">Start over</button>
+  </section>
+</main>
+
+<script src="brands.js"></script>
+<script src="scam.js"></script>
+<script>
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const show = id => document.querySelectorAll('section').forEach(s => s.hidden = s.id !== id);
+const wait = ms => new Promise(r => setTimeout(r, matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : ms));
+const cls = lvl => lvl === 'Likely Scam' ? 'scam' : lvl === 'Suspicious' ? 'sus' : 'safe';
+
+// Demo inbox in the team log format. Swap for real data: parseThreadLog(rawLogText).
+const DEMO_LOG = `
+[2026-09-17 8:02 AM] Mom: call me when you're up, nothing urgent
+[2026-09-17 8:05 AM] Me: will do
+[2026-09-17 9:12 AM] +1 (202) 555-0147: USPS: Your package is on hold due to an incomplete address. Confirm your details within 12 hours or it will be returned: usps-redelivery-help.top/track. Reply Y then reopen the link in Safari.
+[2026-09-17 9:40 AM] +44 7400 123456: E-ZPass Final Notice: You have an unpaid toll of $6.99. To avoid a $50 late fee pay now at ezpass-tollservices.com/pay
+[2026-09-17 10:05 AM] 24273: Chase: Did you attempt a $412.88 purchase at BEST BUY on 09/17? Reply YES or NO. Msg & data rates may apply.
+[2026-09-17 10:06 AM] Me: YES
+[2026-09-17 10:31 AM] +1 (310) 555-0133: Chase Bank Alert: Your account has been locked due to suspicious activity. Verify your identity immediately at chase-secure-verify.com or call 310-555-0199.
+[2026-09-17 11:02 AM] 262966: Amazon: Your one-time passcode is 482913. Don't share it with anyone.
+[2026-09-17 11:44 AM] hr.notice.8823@gmail.com: Dear Customer, your Netflix payment failed. Update your billing info to keep your account: bit.ly/3nEtFlx
+[2026-09-17 12:15 PM] +1 (646) 555-0188: IRS Notice: You are eligible for a $1,400 tax refund. Claim it by 09/19 at irs-refund-portal.us/claim
+[2026-09-17 1:20 PM] +1 (847) 555-0122: Hey is this Sarah? It's Mike from the conference. Long time!
+[2026-09-17 2:01 PM] 46339: FedEx: Your package 7489 3312 0092 is out for delivery today. Track at fedex.com/track
+[2026-09-17 3:12 PM] Dr. Patel's Office: Hi, it's Dana from the dentist office. Just confirming your cleaning Thursday at 2pm. Reply C to confirm.
+[2026-09-17 3:13 PM] Me: C
+[2026-09-17 4:40 PM] +1 (917) 555-0170: DMV: Your driver's license will be suspended for an unpaid traffic ticket. Pay today to avoid penalties: dmv-ticketpay.com
+[2026-09-17 6:05 PM] Sam: wanna get dinner? thinking that noodle place
+[2026-09-17 6:07 PM] Me: yes 7pm
+`;
+
+let reports = [];
+
+async function runInbox() {
+  const messages = parseThreadLog(DEMO_LOG, { skipFrom: [] });
+  reports = [];
+  show('scan');
+  $('chat').innerHTML = '';
+  let flagged = 0;
+  for (const [i, m] of messages.entries()) {
+    const me = m.sender === 'Me';
+    const r = me ? null : investigate(m.sender, m.text);
+    if (r) reports.push(r);
+    const c = r ? cls(r.risk_level) : '';
+    if (r && r.risk_level !== 'Safe') flagged++;
+    const idx = reports.length - 1;
+    $('chat').insertAdjacentHTML('beforeend',
+      `<div class="msg ${me ? 'me' : c}" ${r ? `onclick="showReport(${idx})"` : ''}>
+         <small>${esc(m.sender)}</small>${esc(m.text)}
+         ${r && r.risk_level !== 'Safe' ? `<span class="tag ${c}">${esc(r.risk_level)}</span>` : ''}
+       </div>`);
+    $('scan-status').textContent = `${i + 1} of ${messages.length} messages · ${flagged} flagged`;
+    window.scrollTo(0, document.body.scrollHeight);
+    await wait(260);
+  }
+}
+
+function runOne() {
+  const sender = $('in-sender').value.trim(), text = $('in-text').value.trim();
+  if (!sender || !text) return;
+  reports = [investigate(sender, text)];
+  $('back-scan').hidden = true;
+  showReport(0);
+}
+
+function showReport(i) {
+  const r = reports[i];
+  const c = cls(r.risk_level);
+  $('verdict').textContent = r.risk_level;
+  $('verdict').className = `verdict ${c}`;
+  $('orig').innerHTML = `<small style="color:var(--muted)">From ${esc(r.input.sender)}</small><br>${esc(r.input.text)}`;
+  const s = r.sender;
+  const senderLine = s.kind === 'short_code' ? `Short code ${s.short_code}`
+    : s.kind === 'email' ? `Email address ${s.raw}${s.gateway ? ` (${s.gateway})` : ''}`
+    : s.kind === 'name' ? `Contact name "${s.name}" with no number`
+    : s.kind === 'long_code' ? `${s.e164} · ${(s.line_type || '').replace(/_/g, ' ').toLowerCase()} · ${s.country || 'country unknown'}`
+    : s.raw;
+
+  const cards = [];
+  cards.push(`<div class="card"><h3>Who sent it</h3><p>${esc(senderLine)}</p></div>`);
+  if (r.claimed_companies.length) {
+    cards.push(`<div class="card"><h3>Claims to be ${esc(r.claimed_companies.join(', '))}</h3>` +
+      r.company_ownership.map(o => `<p><span class="own ${o.status}">${o.status === 'CONFIRMED' ? '✓' : o.status === 'CONTRADICTED' ? '✗' : '?'} ${esc(o.brand)} owns this sender: ${esc(o.status.toLowerCase())}</span><br>${esc(o.reason)}</p>`).join('') + `</div>`);
+  }
+  if (r.urls.length) {
+    cards.push(`<div class="card"><h3>Links</h3>` + r.urls.map(u => `<p><code>${esc(u.host)}</code></p><ul>${u.flags.map(f => `<li>${esc(f)}</li>`).join('')}</ul>`).join('') + `</div>`);
+  }
+  const other = r.offline_verdict.reasons.filter(x => !/ ownership |^Link /.test(x));
+  if (other.length) cards.push(`<div class="card"><h3>Red flags in the wording</h3><ul>${other.map(x => `<li>${esc(x)}</li>`).join('')}</ul></div>`);
+  cards.push(`<div class="card"><h3>What to do</h3><p>${esc(r.recommended_action)}</p></div>`);
+  $('cards').innerHTML = cards.join('');
+  show('result');
+  requestAnimationFrame(() => window.scrollTo(0, 0));
+}
+</script>
+</body>
+</html>

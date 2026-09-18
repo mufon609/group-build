@@ -13,6 +13,8 @@ def _sender_line(s: dict) -> str:
         return " · ".join(b for b in bits if b)
     if s["kind"] == "short_code":
         return f"Short code {s['short_code']} ([registry lookup]({s['registry_lookup']}))"
+    if s["kind"] == "name":
+        return f"Contact name \"{s['name']}\" (no number shown)"
     if s["kind"] == "email":
         return f"Email address `{s['raw']}`" + (f" ({s['gateway']})" if s.get("gateway") else "")
     return s["raw"]

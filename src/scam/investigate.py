@@ -46,6 +46,30 @@ def normalize_incoming(raw: dict[str, Any]) -> dict[str, str]:
     }
 
 
+LOG_LINE_RE = re.compile(r"^\[([^\]]+)\]\s*([^:]+):\s*(.+)$")
+
+
+def parse_thread_log(raw: str, *, skip_from: set[str] | None = None) -> list[dict[str, str]]:
+    """Parse the team's text-log format:  [2024-09-03 9:14 AM] Sam: message
+
+    Skips '#' comment lines and blank lines. `skip_from` drops the phone owner's
+    own messages (e.g. {"Me"}). Returns records normalize_incoming() understands.
+    """
+    out = []
+    for i, line in enumerate(raw.splitlines(), 1):
+        line = line.strip()
+        if not line or line.startswith("#"):
+            continue
+        m = LOG_LINE_RE.match(line)
+        if not m:
+            continue
+        ts, sender, text = m.group(1).strip(), m.group(2).strip(), m.group(3).strip()
+        if skip_from and sender in skip_from:
+            continue
+        out.append({"id": f"line-{i}", "sender": sender, "text": text, "received_at": ts})
+    return out
+
+
 # --------------------------------------------------------------------------- #
 # Knowledge base
 # --------------------------------------------------------------------------- #
@@ -85,6 +109,9 @@ def classify_sender(sender: str) -> dict[str, Any]:
         return info
 
     digits = re.sub(r"\D", "", s)
+    if not digits:
+        info.update(kind="name", name=s)
+        return info
     if 3 <= len(digits) <= 6 and not s.startswith("+"):
         info.update(
             kind="short_code",
@@ -186,6 +213,10 @@ def check_ownership(sender: dict[str, Any], brand: dict[str, Any]) -> dict[str, 
             out.update(status="SUSPICIOUS", reason=f"{name} sends from short codes such as {', '.join(brand['short_codes']) or 'n/a'}, not from a regular 10-digit {lt.replace('_', ' ').lower()} line.")
         else:
             out.update(status="SUSPICIOUS", reason=f"Unexpected line type {lt} for a {name} message.")
+        return out
+
+    if sender["kind"] == "name":
+        out.update(status="UNVERIFIED", reason=f"Sender shows as the name \"{sender['name']}\" with no number, so {name} ownership cannot be checked. Real {name} messages come from a short code, not a saved contact or alphanumeric sender.")
         return out
 
     out.update(status="UNVERIFIED", reason="Could not parse the sender.")

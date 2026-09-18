@@ -7,6 +7,7 @@ Run the phishing investigator against the demo inbox (or a single message).
   python src/scam/run_demo.py --sender 24273 --text "Chase: ..."
   python src/scam/run_demo.py --file path/to/inbox.json
   python src/scam/run_demo.py --md reports/investigation_report.md   # write Markdown summary
+  python src/scam/run_demo.py --log demo-data/scam-thread.txt --md   # team text-log format
 """
 
 from __future__ import annotations
@@ -17,7 +18,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from investigate import investigate, normalize_incoming  # noqa: E402
+from investigate import investigate, normalize_incoming, parse_thread_log  # noqa: E402
 from report_md import render  # noqa: E402
 
 DEMO_FILE = Path(__file__).resolve().parents[2] / "demo-data" / "sample_texts.json"
@@ -39,6 +40,8 @@ def pretty(report: dict) -> str:
         lines.append(f"  Sender: {s.get('e164')}  {s.get('line_type')}  {s.get('country')}  {s.get('location') or ''}")
     elif s["kind"] == "short_code":
         lines.append(f"  Sender: short code {s['short_code']}")
+    elif s["kind"] == "name":
+        lines.append(f"  Sender: contact name \"{s['name']}\" (no number)")
     else:
         lines.append(f"  Sender: {s['kind']} {s.get('domain', '')}")
     if report["claimed_companies"]:
@@ -61,7 +64,9 @@ def pretty(report: dict) -> str:
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("--file", type=Path, default=DEMO_FILE)
+    ap.add_argument("--file", type=Path, default=DEMO_FILE, help="JSON inbox [{sender,text}]")
+    ap.add_argument("--log", type=Path, help="text log in the team format: [time] Sender: text")
+    ap.add_argument("--include-me", action="store_true", help="when using --log, also analyze messages from 'Me'")
     ap.add_argument("--sender")
     ap.add_argument("--text")
     ap.add_argument("--json", action="store_true")
@@ -72,6 +77,8 @@ def main() -> None:
 
     if args.sender and args.text:
         messages = [{"id": "adhoc", "sender": args.sender, "text": args.text}]
+    elif args.log:
+        messages = parse_thread_log(args.log.read_text(), skip_from=None if args.include_me else {"Me"})
     else:
         with open(args.file) as f:
             messages = json.load(f)
