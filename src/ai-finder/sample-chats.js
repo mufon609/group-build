@@ -1,20 +1,21 @@
 // Fake texts per occupation for the demo. "Me" is the phone owner. No real messages.
 const SAMPLE_CHATS = {
-  'Tennis coach': { emoji: '🎾', messages: [
-    ['Jake', 'lesson tomorrow at 4?'],
-    ['Me', 'yep! and court booked for thursday too'],
-    ['Priya', 'hey can we reschedule to saturday? kid has a recital'],
-    ['Priya', 'also how many lessons left in the package'],
-    ['Me', 'let me check the spreadsheet, one sec'],
+  'Personal trainer': { emoji: '💪', messages: [
+    ['Jake', 'are you free at 6am tomorrow?'],
+    ['Me', 'yep, see you at the gym'],
+    ['Priya', 'hey need to swap thursday\'s session, can we move it?'],
+    ['Me', 'sure, can you do friday?'],
+    ['Priya', "let's do 7am instead"],
     ['Dan', 'paid via venmo for this week 👍'],
-    ['Maria', 'Hi! my son wants tennis lessons, do you have any openings?'],
+    ['Maria', 'Hi! looking for a trainer, do you have any openings?'],
     ['Maria', 'and how much does it cost?'],
-    ['Tom', 'so sorry, missed our session today, work ran late'],
-    ['Me', 'no worries! still waiting on payment for last week btw'],
+    ['Tom', 'training at the park again?'],
+    ['Me', 'yes! also still waiting on payment for last week btw'],
     ['Tom', 'omg forgot to pay you, sending now'],
-    ['Jake', 'can you fit me in this weekend'],
-    ['Me', 'honestly so hard to keep track of everyone rn'],
-    ['Priya', 'same time next week?'],
+    ['Jake', 'can i get a friday slot too'],
+    ['Me', 'ugh think i double booked friday. so hard to keep track of everyone rn'],
+    ['Priya', "what's my session count for this month?"],
+    ['Jake', 'same time next week?'],
   ]},
   'Tutor': { emoji: '📚', messages: [
     ['Mrs. Chen', "how'd the quiz go?"],
